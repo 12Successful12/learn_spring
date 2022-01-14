@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                    http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+                    http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+                    http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <bean id="user" class="com.hzj.pojo.User"></bean>
+
+    <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+        <property name="dataSource" ref="dataSource"></property>
+    </bean>
+
+    <bean id="userDaoImpl" class="com.hzj.dao.UserDaoImpl">
+        <property name="jdbcTemplate" ref="jdbcTemplate"></property>
+    </bean>
+
+    <bean id="userServiceImpl" class="com.hzj.service.UserServiceImpl">
+        <property name="userDao" ref="userDaoImpl"></property>
+    </bean>
+
+    <!--引入外部属性文件-->
+    <context:property-placeholder location="classpath:jdbc.properties"/>
+    <!--配置连接池-->
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
+        <property name="driverClassName" value="${prop.driverClassName}"></property>
+        <property name="url" value="${prop.url}"></property>
+        <property name="username" value="${prop.username}"></property>
+        <property name="password" value="${prop.password}"></property>
+    </bean>
+
+    <!--1、创建事物管理器-->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"></property>
+    </bean>
+    <!--2、配置事物通知-->
+    <tx:advice id="txadvice">
+        <tx:attributes>
+            <tx:method name="transactionMoney" propagation="REQUIRED"/>
+        </tx:attributes>
+    </tx:advice>
+    <!--3、配置切入点和切面-->
+    <aop:config>
+        <!--配置切入点-->
+        <aop:pointcut id="pc" expression="execution(* com.hzj.service.UserServiceImpl.transactionMoney(..))"/>
+        <!--配置切面-->
+        <aop:advisor advice-ref="txadvice" pointcut-ref="pc"/>
+    </aop:config>
+    <!--spring事物需要配置这个代理，不然会报错：org.springframework.beans.factory.BeanNotOfRequiredTypeException:
+    Bean named 'userServiceImpl' is expected to be of type 'com.hzj.service.UserServiceImpl' but was actually of type 'com.sun.proxy.$Proxy4'-->
+    <aop:aspectj-autoproxy proxy-target-class="true"/>
+
+</beans>
