@@ -9,9 +9,9 @@ learn_spring_annotation：注解方式实现
 
 # learn_spring_xml
 
-![](images/learn_spring_xml_1.png)
+![](https://github.com/12Successful12/learn_spring/blob/main/images/learn_spring_xml_1.png)
 
-![](images/learn_spring_xml_2.png)
+![](https://github.com/12Successful12/learn_spring/blob/main/images/learn_spring_xml_2.png)
 
 
 
